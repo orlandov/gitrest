@@ -17,33 +17,47 @@ class Rest(object):
         pass
 
     def serve(self):
-        if not self.config.mapper_dict:
+        match = self.config.mapper_dict
+
+        if not match:
             self._status = '404 Not found'
             self._output.write("Invalid Command")
         else:
-            getattr(self, self.config.mapper_dict['controller'])()
+            getattr(self, self.config.mapper_dict['controller'])(match)
 
         self._start_response(self._status, self._response_headers)
         return self._output.getvalue()
             
 class GitRest(Rest):
-    def __init__(self, *args, **kwargs):
-        Rest.__init__(self, *args, **kwargs)
-
     def init_controllers(self):
-        self._mapper.connect('/repos', controller='repos')
+        self._mapper.resource(
+            'branch', 'branches',
+            parent_resource=dict(
+                member_name='repo',
+                collection_name='repos'
+            )
+        )
+        self._mapper.resource('repo', 'repos')
+
         self._mapper.connect('', controller='root')
 
         self.config = request_config()
         self.config.mapper = self._mapper
         self.config.environ = self._environ
 
-    def root(self):
+    def set_repos(self, repos):
+        self._repos = repos
+
+    def root(self, match):
         self._output.write("root controller\n")
 
-    def repos(self):
-        self._output.write("repo 1\nrepo 2\n")
+    def repos(self, match):
+        for repo in self._repos:
+            self._output.write("%s\n" % (repo,))
 
-    def commits(self):
+    def branches(self, match):
+        self._output.write("a branch\n%s" % (match,))
+
+    def commits(self, match):
         self._output.write("1 2 3 commits\n")
 

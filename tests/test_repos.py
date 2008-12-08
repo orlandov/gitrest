@@ -20,6 +20,7 @@ class TestRepos(unittest.TestCase):
         c = HTTPConnection(self.server)
         c.request('GET', self.make_rest_url(path))
         self._response = c.getresponse()
+        print self._response.read()
 
     def assert_code(self, exp_code):
         self.assertEqual(self._response.status, exp_code)
