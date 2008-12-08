@@ -1,45 +1,49 @@
 #!python
 
 from routes import Mapper, request_config
+from cStringIO import StringIO
 
-def Rest(object):
+class Rest(object):
     def __init__(self, environ, start_response):
         self._environ = environ
         self._start_response = start_response
+        self._status = '200 OK'
         self._response_headers = [('Content-type','text/plain')]
         self._mapper = Mapper()
+        self._output = StringIO()
         self.init_controllers()
 
     def init_controllers():
         pass
 
     def serve(self):
-        match = self._mapper.match(self._environ['REQUEST_URI'])
+        if not self.config.mapper_dict:
+            self._status = '404 Not found'
+            self._output.write("Invalid Command")
+        else:
+            getattr(self, self.config.mapper_dict['controller'])()
 
-        if not match:
-            return "couldn't find it"
+        self._start_response(self._status, self._response_headers)
+        return self._output.getvalue()
             
-def GitRest(Rest):
+class GitRest(Rest):
+    def __init__(self, *args, **kwargs):
+        Rest.__init__(self, *args, **kwargs)
+
     def init_controllers(self):
-        self._mapper = Mapper()
-        self._mapper.connect('/repos', controller='repo')
+        self._mapper.connect('/repos', controller='repos')
         self._mapper.connect('', controller='root')
 
-        config = request_config()
-        config.environ = self._environ
-
-        self._controllers = dict(
-            root = self.root,
-            repos = self.repos,
-            commits = self.commits
-        )
+        self.config = request_config()
+        self.config.mapper = self._mapper
+        self.config.environ = self._environ
 
     def root(self):
-        return "root controller"
+        self._output.write("root controller\n")
 
     def repos(self):
-        return "repo 1\nrepo 2\n"
+        self._output.write("repo 1\nrepo 2\n")
 
     def commits(self):
-        return "1 2 3 commits"
+        self._output.write("1 2 3 commits\n")
 
