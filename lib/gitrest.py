@@ -82,9 +82,6 @@ class Controller(object):
     def __init__(self, rest):
         self.rest = rest
 
-    def set_match(self, match):
-        self.match = match
-
     def GET(self):
          accept = self.rest._environ.get('HTTP_ACCEPT', 'text/html').split(',')
          if 'text/html' in accept:
@@ -100,18 +97,17 @@ class Controller(object):
         self.rest.write(dumps(self.get_resource()))
 
     def GET_html(self):
-        self.rest.write("html %s" % (self.get_resource()))
+        self.rest.write("<br />".join(self.get_resource()))
 
     def GET_plain(self):
         self.rest.write("plain %s" % (self.get_resource()))
 
 
 class ReposController(Controller):
-    def GET(self):
-        return 'repos controller'
-
-    def GET_resource(self):
-        return self.repos.keys().sort()
+    def get_resource(self):
+        repos = self.rest._repos.keys()
+        repos.sort()
+        return repos
 
 
 class RootController(Controller):

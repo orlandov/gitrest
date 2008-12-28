@@ -40,8 +40,8 @@ class RestTest(object):
         obj = simplejson.loads(s)
         self.assertEqual(obj, exp_obj)
 
-    def assert_body(self, exp_body):
-        self.assertTrue(exp_body in self.response_body)
+    def assert_body_like(self, exp_body):
+        self.assertTrue(exp_body in self.response_body, "%s -- %s" % (self.response_body, exp_body))
 
 
 class TestRoot(unittest.TestCase, RestTest):
@@ -50,9 +50,8 @@ class TestRoot(unittest.TestCase, RestTest):
 
     def test_repos(self):
         self.GET_json('/')
-        print self._response.read()
         self.assert_code(200)
-        self.assert_json([u'gr.git', u'sample.git', u'sudobangbang.git'])
+        self.assert_json([u'a', u'b'])
 
 
 class TestRepos(unittest.TestCase, RestTest):
@@ -60,10 +59,13 @@ class TestRepos(unittest.TestCase, RestTest):
         self.start_server()
 
     def test_repos(self):
-        self.GET_json('/')
-        print self._response.read()
+        self.GET_json('/repos')
         self.assert_code(200)
-        self.assert_json([u'gr.git', u'sample.git', u'sudobangbang.git'])
+        self.assert_json([u'a', u'b'])
+
+    def test_html(self):
+        self.GET('/repos', headers={ 'Accept': 'text/html' })
+        self.assert_body_like(u'a<br />b')
 
     def test_invalid_path(self):
         self.GET('/invalid')
