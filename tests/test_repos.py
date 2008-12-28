@@ -21,7 +21,10 @@ class RestTest(object):
     def make_rest_url(self, path):
         return "%s%s" % (self.base_path, path)
 
-    def GET(self, path, headers={}):
+    def assert_equal(self, got, exp):
+        self.assertEqual(got, exp, 'got %s, exp %s' % (repr(got), repr(exp)))
+
+    def GET(self, path, headers={'Accept': 'text/html'}):
         c = HTTPConnection(self.server, self.port)
         url = self.make_rest_url(path)
         c.request('GET', url, None, headers)
@@ -32,13 +35,16 @@ class RestTest(object):
         headers = { 'Accept': 'application/json' }
         self.GET(path, headers)
 
+    def assert_header(self, header, exp_value):
+        self.assert_equal(self._response.getheader(header), exp_value)
+
     def assert_code(self, exp_code):
-        self.assertEqual(self._response.status, exp_code)
+        self.assert_equal(self._response.status, exp_code)
 
     def assert_json(self, exp_obj):
         s = self.response_body
         obj = simplejson.loads(s)
-        self.assertEqual(obj, exp_obj)
+        self.assert_equal(obj, exp_obj)
 
     def assert_body_like(self, exp_body):
         self.assertTrue(exp_body in self.response_body, "%s -- %s" % (self.response_body, exp_body))
@@ -70,3 +76,25 @@ class TestRepos(unittest.TestCase, RestTest):
     def test_invalid_path(self):
         self.GET('/invalid')
         self.assert_code(404)
+
+class TestRepo(unittest.TestCase, RestTest):
+    def setUp(self):
+        self.start_server()
+
+    def test_invalid_repo(self):
+        self.GET('/repo/fake')
+        self.assert_code(404)
+
+    def test_repo_description(self):
+        self.GET('/repo/a')
+        self.assert_code(200)
+        self.assert_body_like('<h1>a</h1>Description: This is the description of a.git<br />Branches: master')
+
+    def test_repo_description_json(self):
+        self.GET_json('/repo/a')
+        self.assert_code(200)
+        self.assert_json({
+            'repo': 'a',
+            'description': 'This is the description of a.git',
+            'branches' : ['master']
+        })
