@@ -7,7 +7,7 @@ from gitrest import GitRest
 
 repos = {
     'sample.git': '/home/orlando/projects/sample.git',
-   'gr.git': '/home/orlando/projects/gr.git',
+    'gr.git': '/home/orlando/projects/gr.git',
     'sudobangbang.git': '/home/orlando/projects/sudobangbang.git'        
 }
 
