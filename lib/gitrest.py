@@ -167,7 +167,8 @@ class RepoController(Controller):
         repo = resource['repo']
         desc = resource['description']
         branches = resource['branches']
-        return "<h1>%s</h1>Description: %s<br />Branches: %s" % (repo, desc, ", ".join(branches))
+        tree = resource['tree']
+        return "<h1>%s</h1>Description: %s<br />Branches: %s<h2>Tree:</h2>%s" % (repo, desc, ", ".join(branches), "<br />\n".join(tree))
 
     def GET_html(self):
         try:

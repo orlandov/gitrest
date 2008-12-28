@@ -89,7 +89,9 @@ class TestRepo(unittest.TestCase, RestTest):
     def test_repo_description(self):
         self.GET('/repo/a')
         self.assert_code(200)
-        self.assert_body_like('<h1>a</h1>Description: This is the description of a.git<br />Branches: master')
+        self.assert_body_like('<h1>a</h1>')
+        self.assert_body_like('Description: This is the description of a.git')
+        self.assert_body_like('Branches: master')
 
     def test_repo_description_json(self):
         self.GET_json('/repo/a')
