@@ -154,10 +154,12 @@ class RepoController(Controller):
     def get_resource(self):
         repo_name = self.rest.match['repo']
         repo = git.Repo('repos/' + self.rest.match['repo'] + '.git')
+
         return {
             'repo': repo_name,
             'description': repo.description,
-            'branches': [ branch.name for branch in repo.branches ]
+            'branches': [ branch.name for branch in repo.branches ],
+            'tree': [ item[0] for item in repo.tree().items() ]
         }
 
     @staticmethod

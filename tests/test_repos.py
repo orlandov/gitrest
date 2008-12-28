@@ -77,6 +77,7 @@ class TestRepos(unittest.TestCase, RestTest):
         self.GET('/invalid')
         self.assert_code(404)
 
+
 class TestRepo(unittest.TestCase, RestTest):
     def setUp(self):
         self.start_server()
@@ -96,5 +97,8 @@ class TestRepo(unittest.TestCase, RestTest):
         self.assert_json({
             'repo': 'a',
             'description': 'This is the description of a.git',
-            'branches' : ['master']
+            'branches' : ['master'],
+            'tree': ['lib', 'LICENSE', 'doc', 'MANIFEST.in', '.gitignore', 
+            'test', 'VERSION', 'AUTHORS', 'README', 'ez_setup.py',
+            'setup.py', 'CHANGES'],
         })
