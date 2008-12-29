@@ -68,10 +68,10 @@ class GitRest(Rest):
                 'controller': 'repos',
                 'class': ReposController,
             },
-#             '/repo/:repo/commits': {
-#                 'controller': 'repo_commits',
-#                 'class': RepoCommitsController,
-#             },
+             '/repo/:repo/commits': {
+                 'controller': 'repo_commits',
+                 'class': RepoCommitsController,
+             },
         }
 
         routes = self.routes_config.keys()
@@ -150,16 +150,22 @@ class RootController(Controller):
         return repos
 
 
-class RepoController(Controller):
+class LoadsRepoMixin(object):
+    def load_repo(self):
+        if not hasattr(self, 'repo'):
+            self.repo_name = self.rest.match['repo']
+            self.repo = git.Repo('repos/' + self.rest.match['repo'] + '.git')
+
+
+class RepoController(Controller, LoadsRepoMixin):
     def get_resource(self):
-        repo_name = self.rest.match['repo']
-        repo = git.Repo('repos/' + self.rest.match['repo'] + '.git')
+        self.load_repo()
 
         return {
-            'repo': repo_name,
-            'description': repo.description,
-            'branches': [ branch.name for branch in repo.branches ],
-            'tree': [ item[0] for item in repo.tree().items() ]
+            'repo': self.repo_name,
+            'description': self.repo.description,
+            'branches': [ branch.name for branch in self.repo.branches ],
+            'tree': [ item[0] for item in self.repo.tree().items() ]
         }
 
     @staticmethod
@@ -179,3 +185,22 @@ class RepoController(Controller):
 
     def GET_plain(self):
         self.rest.write('weak')
+
+class RepoCommitsController(Controller, LoadsRepoMixin):
+    def get_resource(self):
+        self.load_repo()
+        return [
+            {'id': c.id, 'summary': c.summary }
+            for c in self.repo.commits()
+        ]
+
+    @staticmethod
+    def as_html(resource):
+        return "commit %s" % (str(resource),)
+
+    def GET_html(self):
+        try:
+            self.rest.write(RepoCommitsController.as_html(self.get_resource()))
+        except git.NoSuchPathError:
+            self.rest.status('404 Repo not found')
+            self.rest.write("No such repo")
