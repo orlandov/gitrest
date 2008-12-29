@@ -30,7 +30,7 @@ class Rest(object):
             self.status('404 Not found')
             self.write("Invalid Command")
         else:
-            self.run_controller()
+            self.write("%s" % (self.match,))
 
         self._make_response_headers()
         self._start_response(self._status, self._headers)
@@ -55,34 +55,12 @@ class Rest(object):
 
 class GitRest(Rest):
     def init_controllers(self):
-        self.routes_config = {
-            '/': {
-                'controller': 'root',
-                'class': RootController,
-            },
-            '/repo/:repo': {
-                'controller': 'repo',
-                'class': RepoController,
-            },
-            '/repos': {
-                'controller': 'repos',
-                'class': ReposController,
-            },
-             '/repo/:repo/commits': {
-                 'controller': 'repo_commits',
-                 'class': RepoCommitsController,
-             },
-        }
+        self._mapper.resource('repo', 'repos')
+        self._mapper.resource('branch', 'branches', path_prefix='/repos/:repo_id', name_prefix='branch_')
 
-        routes = self.routes_config.keys()
-        routes.sort(None, None, True) # sort in reverse
-        self.controller_map = {}
-        for route in routes:
-            route_config = self.routes_config[route]
-            controller = route_config['controller']
-            self.controller_map[controller] = route_config['class']
-            del route_config['class']
-            self._mapper.connect(route, **route_config)
+        # both branches and repos have commits
+        self._mapper.resource('commit', 'commits', path_prefix='/repos/:repo_id', name_prefix='commit_')
+        self._mapper.resource('commit', 'commits', path_prefix='/repos/:repo_id/branches/:branch_id', name_prefix='commit_')
 
         self.config = request_config()
         self.config.mapper = self._mapper
