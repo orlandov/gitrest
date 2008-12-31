@@ -33,6 +33,7 @@ class RestTest(object):
     def GET_json(self, path):
         headers = { 'Accept': 'application/json' }
         self.GET(path, headers)
+        self.json_object = simplejson.loads(self.response_body)
 
     def assert_header(self, header, exp_value):
         self.assert_equal(self._response.getheader(header), exp_value)
