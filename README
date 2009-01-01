@@ -1,0 +1,25 @@
+(c) Orlando Vazquez 2009
+
+This is a simple WSGI application that provides a restful interface to Git.
+Eventually I'd like it to have a full web2.0 ajaxy interface. Until then, REST
+and json will do.
+
+Provides the following resources:
+
+Repos
+------
+
+/repos
+/repos/:repo_id
+
+Branches
+--------
+
+/repos/:repo_id/branches
+/repos/:repo_id/branches/:branch_id
+
+Commits
+-------
+
+/repos/:repo_id/commits
+/repos/:repo_id/branches/:branch_id/commits
