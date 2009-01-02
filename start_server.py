@@ -11,6 +11,10 @@ def reload_application(*args):
     reload(gitrest)
     return grwsgi.application(*args)
 
-port = int(sys.argv[1])
+try:
+    port = int(sys.argv[1])
+except IndexError:
+    port = 9000
+
 httpd = make_server('', port, reload_application)
 httpd.serve_forever()
