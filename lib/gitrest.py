@@ -1,5 +1,7 @@
 #!python
 
+import sys
+import traceback
 from routes import Mapper, request_config, url_for
 from cStringIO import StringIO
 from simplejson import dumps, loads
@@ -85,7 +87,14 @@ class GitRest(Rest):
         controller = self.config.mapper_dict['controller']
         ControllerClass = self.controller_map[controller]
         controller = ControllerClass(self)
-        controller.run()
+
+        try:
+            controller.run()
+        except:
+            exc_string = traceback.format_exc()
+            self.status('500 Server Error')
+            self._output.truncate(0)
+            self._output.write("""<html><head><title>Server Error</title></head><body><pre>%s</pre></body></html>""" % (exc_string))
 
     def set_repos(self, repos):
         self._repos = repos
@@ -202,7 +211,7 @@ class RootController(Controller):
 
 class LoadsRepoMixin(object):
     def load_repo(self):
-        if hasattr(Self, 'repo'): return
+        if hasattr(self, 'repo'): return
         self.repo_name = self.rest.match['repo_id']
         self.repo = git.Repo('repos/' + self.repo_name + '.git')
 
@@ -211,13 +220,13 @@ class LoadsRepoMixin(object):
 
 
 class CommitsController(Controller, LoadsRepoMixin):
-    def validate(self):
-        validate_repo()
-
     def member_link(self, collection):
-        return "<a href='%s'>%s</a>" % (url_for(controller='commits', repo_id=self.rest.match['repo_id'], action='show', id=collection['id']), collection['id'])
+        return "<a href='%s'>%s</a>" % (url_for(controller='commits',
+            repo_id=self.rest.match['repo_id'], action='show',
+            id=collection['id']), collection['id'])
 
     def get_collection(self):
+        self.load_repo()
         return [
             { 'id': c.id, 'summary': c.summary }
             for c in self.repo.commits()
