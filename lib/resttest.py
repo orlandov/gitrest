@@ -38,6 +38,9 @@ class RestTest(object):
     def assert_header(self, header, exp_value):
         self.assert_equal(self._response.getheader(header), exp_value)
 
+    def assert_content_type(self, ct):
+        self.assert_header('Content-type', ct)
+
     def assert_code(self, exp_code):
         self.assert_equal(self._response.status, exp_code)
 
