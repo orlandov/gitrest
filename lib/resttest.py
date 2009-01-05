@@ -33,7 +33,11 @@ class RestTest(object):
     def GET_json(self, path):
         headers = { 'Accept': 'application/json' }
         self.GET(path, headers)
-        self.json_object = simplejson.loads(self.response_body)
+        try:
+            self.json_object = simplejson.loads(self.response_body)
+        except:
+            print "Invalid JSON ", self.response_body
+            raise
 
     def assert_header(self, header, exp_value):
         self.assert_equal(self._response.getheader(header), exp_value)
@@ -46,7 +50,12 @@ class RestTest(object):
 
     def assert_json(self, exp_obj):
         s = self.response_body
-        obj = simplejson.loads(s)
+        try:
+            obj = simplejson.loads(s)
+        except:
+            print "Invalid JSON ", s
+            raise
+
         self.assert_equal(obj, exp_obj)
 
     def assert_body_like(self, exp_body):
