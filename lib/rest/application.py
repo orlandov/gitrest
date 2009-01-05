@@ -3,7 +3,7 @@
 from routes import Mapper, request_config, url_for
 from cStringIO import StringIO
 
-class Rest(object):
+class Application(object):
     def __init__(self, environ, start_response):
         self._environ = environ
         self._start_response = start_response

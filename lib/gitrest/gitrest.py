@@ -10,9 +10,9 @@ import traceback
 import config
 import gitrest
 
-import rest.rest
+import rest.application
 
-class GitRest(rest.rest.Rest):
+class GitRest(rest.application.Application):
     def init_controllers(self):
         self.controller_map = {
             'commits': CommitsController,
