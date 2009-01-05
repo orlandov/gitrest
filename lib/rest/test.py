@@ -6,14 +6,14 @@ import threading
 from httplib import HTTPConnection
 from wsgiref.simple_server import make_server
 
-import grwsgi
+import gitrest.wsgi
 
-class RestTest(object):
+class Test(object):
     def start_server(self, server='localhost', base_path=''):
         self.server = server
         self.base_path = base_path
         self.port = random.randint(1024, 65000)
-        self.httpd = make_server(self.server, self.port, grwsgi.application)
+        self.httpd = make_server(self.server, self.port, gitrest.wsgi.application)
         self.thread = threading.Thread(target=self.httpd.serve_forever)
         self.thread.start()
 

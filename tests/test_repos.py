@@ -1,12 +1,12 @@
 #!python
 
-import unittest
 import os
 import os.path
+import unittest
 
-from resttest import RestTest
-import grconfig
-import grwsgi
+import gitrest.config
+import gitrest.wsgi
+import rest.test
 
 # class TestRoot(unittest.TestCase, RestTest):
 #     def setUp(self):
@@ -24,9 +24,9 @@ import grwsgi
 def setup_repos():
     if not os.path.isdir('repos'):
         os.system("cd tests; tar zxf repos.tgz")
-        grconfig.Settings.repos_dir = 'tests/repos'
+        gitrest.config.Settings.repos_dir = 'tests/repos'
 
-class TestContentType(unittest.TestCase, RestTest):
+class TestContentType(unittest.TestCase, rest.test.Test):
     def setUp(self):
         self.start_server()
         setup_repos()
@@ -74,7 +74,7 @@ class TestContentType(unittest.TestCase, RestTest):
         self.assert_code(200)
         self.assert_content_type('text/html')
 
-class TestRepos(unittest.TestCase, RestTest):
+class TestRepos(unittest.TestCase, rest.test.Test):
     def setUp(self):
         self.start_server()
         setup_repos()
@@ -101,7 +101,7 @@ class TestRepos(unittest.TestCase, RestTest):
         self.assertTrue(self.json_object.has_key('description'))
         self.assertTrue(self.json_object.has_key('id'))
 
-class TestBranches(unittest.TestCase, RestTest):
+class TestBranches(unittest.TestCase, rest.test.Test):
     def setUp(self):
         self.start_server()
         setup_repos()

@@ -2,13 +2,13 @@
 
 import os
 import sys
-sys.path.append('/home/orlando/projects/gr.git/lib')
+sys.path.append('/home/orlando/projects/gr/lib')
 
-import grconfig
+import config
 from gitrest import GitRest
 
 def application(environ, start_response):
     gr = GitRest(environ, start_response)
-    grconfig.setup()
-    gr.set_repos(grconfig.Settings.repos)
+    config.setup()
+    gr.set_repos(config.Settings.repos)
     return gr.serve()

@@ -1,14 +1,15 @@
 #!python
 
+from cgi import parse_qs
+from cStringIO import StringIO
+from routes import Mapper, request_config, url_for
+from simplejson import dumps, loads
+import git
 import sys
 import traceback
-from routes import Mapper, request_config, url_for
-from cStringIO import StringIO
-from simplejson import dumps, loads
-from cgi import parse_qs
-import git
 
-import grconfig
+import config
+import gitrest
 
 class Rest(object):
     def __init__(self, environ, start_response):
@@ -202,7 +203,7 @@ class ReposController(Controller):
             self.rest.status('404 Repo not found')
             return { 'id': 'not found', 'description': 'doesnt exist' }
 
-        repo = grconfig.repo(repo_id)
+        repo = gitrest.config.repo(repo_id)
         repo_dict = {
             'id': repo_id,
             'description': repo.description,
@@ -243,7 +244,7 @@ class LoadsRepoMixin(object):
         if hasattr(self, 'repo'): return
         self.repo_id = self.rest.match['repo_id']
         try:
-            self.repo = grconfig.repo(self.repo_id)
+            self.repo = gitrest.config.repo(self.repo_id)
         except git.errors.NoSuchPathError:
             raise InvalidRepoError(repo_id=self.repo_id)
 
