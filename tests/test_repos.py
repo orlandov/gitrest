@@ -82,18 +82,12 @@ class TestRepos(unittest.TestCase, RestTest):
     def test_repos(self):
         self.GET_json('/repos')
         self.assert_code(200)
-
         self.assertTrue(self.json_object is not [], "make sure we got some values back")
         for r in self.json_object:
             self.assertTrue(r.has_key('tree'))
             self.assertTrue(r.has_key('branches'))
             self.assertTrue(r.has_key('description'))
             self.assertTrue(r.has_key('id'))
-
-class TestRepo(unittest.TestCase, RestTest):
-    def setUp(self):
-        self.start_server()
-        setup_repos()
 
     def test_invalid_repo(self):
         self.GET('/repos/fake')
@@ -102,15 +96,7 @@ class TestRepo(unittest.TestCase, RestTest):
     def test_repo_description(self):
         self.GET_json('/repos/a')
         self.assert_code(200)
-
-#     def test_repo_description_json(self):
-#         self.GET_json('/repos/a')
-#         self.assert_code(200)
-#         self.assert_json({
-#             'repo': 'a',
-#             'description': 'This is the description of a.git',
-#             'branches' : ['master'],
-#             'tree': ['lib', 'LICENSE', 'doc', 'MANIFEST.in', '.gitignore', 
-#             'test', 'VERSION', 'AUTHORS', 'README', 'ez_setup.py',
-#             'setup.py', 'CHANGES'],
-#         })
+        self.assertTrue(self.json_object.has_key('tree'))
+        self.assertTrue(self.json_object.has_key('branches'))
+        self.assertTrue(self.json_object.has_key('description'))
+        self.assertTrue(self.json_object.has_key('id'))
