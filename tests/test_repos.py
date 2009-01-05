@@ -100,3 +100,27 @@ class TestRepos(unittest.TestCase, RestTest):
         self.assertTrue(self.json_object.has_key('branches'))
         self.assertTrue(self.json_object.has_key('description'))
         self.assertTrue(self.json_object.has_key('id'))
+
+class TestBranches(unittest.TestCase, RestTest):
+    def setUp(self):
+        self.start_server()
+        setup_repos()
+
+    def test_invalid_repo(self):
+        self.GET('/repos/x/branches')
+        self.assert_code(404)
+
+    def test_branches(self):
+        self.GET_json('/repos/a/branches')
+        self.assert_code(200)
+        for b in self.json_object:
+            self.assertTrue(b.has_key('commit_id'))
+            self.assertTrue(b.has_key('branch_id'))
+
+    def test_branch(self):
+        self.GET_json('/repos/a/branches/master')
+        self.assert_code(200)
+
+    def test_invalid_branch(self):
+        self.GET('/repos/a/branches/fake')
+        self.assert_code(404)

@@ -66,7 +66,7 @@ class GitRest(Rest):
         self.controller_map = {
             'commits': CommitsController,
             'repos': ReposController,
-            'branchs': BranchesController,
+            'branches': BranchesController,
             'root': RootController,
         }
 
@@ -92,11 +92,15 @@ class GitRest(Rest):
 
         try:
             controller.run()
-        except:
-            exc_string = traceback.format_exc()
-            self.status('500 Server Error')
+        except Exception, e:
             self._output.truncate(0)
-            self._output.write("""<html><head><title>Server Error</title></head><body><pre>%s</pre></body></html>""" % (exc_string))
+            if issubclass(e.__class__, GitRestError):
+                self.status(e.status)
+                self.write(str(e))
+            else:
+                exc_string = traceback.format_exc()
+                self.status('500 Server Error')
+                self.write("""<html><head><title>Server Error</title></head><body><pre>%s</pre></body></html>""" % (exc_string))
 
     def set_repos(self, repos):
         self._repos = repos
@@ -207,17 +211,41 @@ class ReposController(Controller):
         } 
         return repo_dict
 
+class GitRestError(Exception):
+    pass
+
+
+class InvalidRepoError(GitRestError):
+    def __init__(self, **kwargs):
+        self.repo_id = kwargs['repo_id']
+        self.status='404 Invalid repo'
+
+    def __str__(self):
+        return "Invalid repo, '%s'" % (self.repo_id,)
+
+
+class InvalidBranchError(GitRestError):
+    def __init__(self, **kwargs):
+        self.branch_id = kwargs['branch_id']
+        self.status='404 Invalid branch'
+
+    def __str__(self):
+        return "Invalid branch, '%s'" % (self.branch_id,)
+
 
 class RootController(Controller):
      def index(self):
          self.rest.write("awesome rest server index")
 
+
 class LoadsRepoMixin(object):
     def load_repo(self):
         if hasattr(self, 'repo'): return
-        self.repo_name = self.rest.match['repo_id']
-        #self.repo = git.Repo('repos/' + self.repo_name + '.git')
-        self.repo = grconfig.repo(self.repo_name)
+        self.repo_id = self.rest.match['repo_id']
+        try:
+            self.repo = grconfig.repo(self.repo_id)
+        except git.errors.NoSuchPathError:
+            raise InvalidRepoError(repo_id=self.repo_id)
 
 
 class CommitsController(Controller, LoadsRepoMixin):
@@ -239,4 +267,19 @@ class CommitsController(Controller, LoadsRepoMixin):
         return { 'message': c.message, 'actor': c.author.name}
 
 class BranchesController(Controller, LoadsRepoMixin):
-    pass
+    def member_link(self, collection):
+        pass
+
+    def get_collection(self):
+        self.load_repo()
+        return [
+            { 'commit_id': b.commit.id, 'branch_id': b.name }
+            for b in self.repo.branches
+        ]
+
+    def get_member(self, id):
+        self.load_repo()
+        for b in self.repo.branches:
+            if b.name == id:
+                return { 'commit_id': b.commit.id, 'branch_id': b.name } 
+        raise InvalidBranchError(branch_id=id)
