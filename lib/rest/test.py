@@ -20,8 +20,8 @@ class Test(object):
     def make_rest_url(self, path):
         return "%s%s" % (self.base_path, path)
 
-    def assert_equal(self, got, exp):
-        self.assertEqual(got, exp, 'got %s, exp %s' % (repr(got), repr(exp)))
+    def assert_equal(self, got, exp, msg=""):
+        self.assertEqual(got, exp, 'got %s, exp %s - %s' % (repr(got), repr(exp), msg))
 
     def GET(self, path, headers={'Accept': 'text/html'}):
         c = HTTPConnection(self.server, self.port)
@@ -46,7 +46,7 @@ class Test(object):
         self.assert_header('Content-type', ct)
 
     def assert_code(self, exp_code):
-        self.assert_equal(self._response.status, exp_code)
+        self.assert_equal(self._response.status, exp_code, "response body was '%s'" % (self.response_body))
 
     def assert_json(self, exp_obj):
         s = self.response_body
